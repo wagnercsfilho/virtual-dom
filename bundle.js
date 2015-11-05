@@ -1,134 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-;(function (exports) {
-	'use strict';
-
-  var Arr = (typeof Uint8Array !== 'undefined')
-    ? Uint8Array
-    : Array
-
-	var PLUS   = '+'.charCodeAt(0)
-	var SLASH  = '/'.charCodeAt(0)
-	var NUMBER = '0'.charCodeAt(0)
-	var LOWER  = 'a'.charCodeAt(0)
-	var UPPER  = 'A'.charCodeAt(0)
-	var PLUS_URL_SAFE = '-'.charCodeAt(0)
-	var SLASH_URL_SAFE = '_'.charCodeAt(0)
-
-	function decode (elt) {
-		var code = elt.charCodeAt(0)
-		if (code === PLUS ||
-		    code === PLUS_URL_SAFE)
-			return 62 // '+'
-		if (code === SLASH ||
-		    code === SLASH_URL_SAFE)
-			return 63 // '/'
-		if (code < NUMBER)
-			return -1 //no match
-		if (code < NUMBER + 10)
-			return code - NUMBER + 26 + 26
-		if (code < UPPER + 26)
-			return code - UPPER
-		if (code < LOWER + 26)
-			return code - LOWER + 26
-	}
-
-	function b64ToByteArray (b64) {
-		var i, j, l, tmp, placeHolders, arr
-
-		if (b64.length % 4 > 0) {
-			throw new Error('Invalid string. Length must be a multiple of 4')
-		}
-
-		// the number of equal signs (place holders)
-		// if there are two placeholders, than the two characters before it
-		// represent one byte
-		// if there is only one, then the three characters before it represent 2 bytes
-		// this is just a cheap hack to not do indexOf twice
-		var len = b64.length
-		placeHolders = '=' === b64.charAt(len - 2) ? 2 : '=' === b64.charAt(len - 1) ? 1 : 0
-
-		// base64 is 4/3 + up to two characters of the original data
-		arr = new Arr(b64.length * 3 / 4 - placeHolders)
-
-		// if there are placeholders, only get up to the last complete 4 chars
-		l = placeHolders > 0 ? b64.length - 4 : b64.length
-
-		var L = 0
-
-		function push (v) {
-			arr[L++] = v
-		}
-
-		for (i = 0, j = 0; i < l; i += 4, j += 3) {
-			tmp = (decode(b64.charAt(i)) << 18) | (decode(b64.charAt(i + 1)) << 12) | (decode(b64.charAt(i + 2)) << 6) | decode(b64.charAt(i + 3))
-			push((tmp & 0xFF0000) >> 16)
-			push((tmp & 0xFF00) >> 8)
-			push(tmp & 0xFF)
-		}
-
-		if (placeHolders === 2) {
-			tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4)
-			push(tmp & 0xFF)
-		} else if (placeHolders === 1) {
-			tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2)
-			push((tmp >> 8) & 0xFF)
-			push(tmp & 0xFF)
-		}
-
-		return arr
-	}
-
-	function uint8ToBase64 (uint8) {
-		var i,
-			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
-			output = "",
-			temp, length
-
-		function encode (num) {
-			return lookup.charAt(num)
-		}
-
-		function tripletToBase64 (num) {
-			return encode(num >> 18 & 0x3F) + encode(num >> 12 & 0x3F) + encode(num >> 6 & 0x3F) + encode(num & 0x3F)
-		}
-
-		// go through the array every three bytes, we'll deal with trailing stuff later
-		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
-			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
-			output += tripletToBase64(temp)
-		}
-
-		// pad the end with zeros, but make sure to not forget the extra bytes
-		switch (extraBytes) {
-			case 1:
-				temp = uint8[uint8.length - 1]
-				output += encode(temp >> 2)
-				output += encode((temp << 4) & 0x3F)
-				output += '=='
-				break
-			case 2:
-				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1])
-				output += encode(temp >> 10)
-				output += encode((temp >> 4) & 0x3F)
-				output += encode((temp << 2) & 0x3F)
-				output += '='
-				break
-		}
-
-		return output
-	}
-
-	exports.toByteArray = b64ToByteArray
-	exports.fromByteArray = uint8ToBase64
-}(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
 },{}],2:[function(require,module,exports){
-
-},{}],3:[function(require,module,exports){
-arguments[4][2][0].apply(exports,arguments)
-},{"dup":2}],4:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"dup":1}],3:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -1676,7 +1550,133 @@ function blitBuffer (src, dst, offset, length) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":1,"ieee754":5,"is-array":6}],5:[function(require,module,exports){
+},{"base64-js":4,"ieee754":5,"is-array":6}],4:[function(require,module,exports){
+var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+;(function (exports) {
+	'use strict';
+
+  var Arr = (typeof Uint8Array !== 'undefined')
+    ? Uint8Array
+    : Array
+
+	var PLUS   = '+'.charCodeAt(0)
+	var SLASH  = '/'.charCodeAt(0)
+	var NUMBER = '0'.charCodeAt(0)
+	var LOWER  = 'a'.charCodeAt(0)
+	var UPPER  = 'A'.charCodeAt(0)
+	var PLUS_URL_SAFE = '-'.charCodeAt(0)
+	var SLASH_URL_SAFE = '_'.charCodeAt(0)
+
+	function decode (elt) {
+		var code = elt.charCodeAt(0)
+		if (code === PLUS ||
+		    code === PLUS_URL_SAFE)
+			return 62 // '+'
+		if (code === SLASH ||
+		    code === SLASH_URL_SAFE)
+			return 63 // '/'
+		if (code < NUMBER)
+			return -1 //no match
+		if (code < NUMBER + 10)
+			return code - NUMBER + 26 + 26
+		if (code < UPPER + 26)
+			return code - UPPER
+		if (code < LOWER + 26)
+			return code - LOWER + 26
+	}
+
+	function b64ToByteArray (b64) {
+		var i, j, l, tmp, placeHolders, arr
+
+		if (b64.length % 4 > 0) {
+			throw new Error('Invalid string. Length must be a multiple of 4')
+		}
+
+		// the number of equal signs (place holders)
+		// if there are two placeholders, than the two characters before it
+		// represent one byte
+		// if there is only one, then the three characters before it represent 2 bytes
+		// this is just a cheap hack to not do indexOf twice
+		var len = b64.length
+		placeHolders = '=' === b64.charAt(len - 2) ? 2 : '=' === b64.charAt(len - 1) ? 1 : 0
+
+		// base64 is 4/3 + up to two characters of the original data
+		arr = new Arr(b64.length * 3 / 4 - placeHolders)
+
+		// if there are placeholders, only get up to the last complete 4 chars
+		l = placeHolders > 0 ? b64.length - 4 : b64.length
+
+		var L = 0
+
+		function push (v) {
+			arr[L++] = v
+		}
+
+		for (i = 0, j = 0; i < l; i += 4, j += 3) {
+			tmp = (decode(b64.charAt(i)) << 18) | (decode(b64.charAt(i + 1)) << 12) | (decode(b64.charAt(i + 2)) << 6) | decode(b64.charAt(i + 3))
+			push((tmp & 0xFF0000) >> 16)
+			push((tmp & 0xFF00) >> 8)
+			push(tmp & 0xFF)
+		}
+
+		if (placeHolders === 2) {
+			tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4)
+			push(tmp & 0xFF)
+		} else if (placeHolders === 1) {
+			tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2)
+			push((tmp >> 8) & 0xFF)
+			push(tmp & 0xFF)
+		}
+
+		return arr
+	}
+
+	function uint8ToBase64 (uint8) {
+		var i,
+			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
+			output = "",
+			temp, length
+
+		function encode (num) {
+			return lookup.charAt(num)
+		}
+
+		function tripletToBase64 (num) {
+			return encode(num >> 18 & 0x3F) + encode(num >> 12 & 0x3F) + encode(num >> 6 & 0x3F) + encode(num & 0x3F)
+		}
+
+		// go through the array every three bytes, we'll deal with trailing stuff later
+		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
+			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+			output += tripletToBase64(temp)
+		}
+
+		// pad the end with zeros, but make sure to not forget the extra bytes
+		switch (extraBytes) {
+			case 1:
+				temp = uint8[uint8.length - 1]
+				output += encode(temp >> 2)
+				output += encode((temp << 4) & 0x3F)
+				output += '=='
+				break
+			case 2:
+				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1])
+				output += encode(temp >> 10)
+				output += encode((temp >> 4) & 0x3F)
+				output += encode((temp << 2) & 0x3F)
+				output += '='
+				break
+		}
+
+		return output
+	}
+
+	exports.toByteArray = b64ToByteArray
+	exports.fromByteArray = uint8ToBase64
+}(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
+
+},{}],5:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -2695,7 +2695,7 @@ if (typeof module === 'object' && module.exports) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":4}],12:[function(require,module,exports){
+},{"buffer":3}],12:[function(require,module,exports){
 var parser = require('./parser');
 var parseStyle = function(el){
   var style = el.style;
@@ -3351,7 +3351,7 @@ exports['default'] = CodeGen;
 module.exports = exports['default'];
 
 
-},{"../utils":44,"source-map":50}],22:[function(require,module,exports){
+},{"../utils":44,"source-map":49}],22:[function(require,module,exports){
 /* eslint-disable new-cap */
 
 'use strict';
@@ -7525,7 +7525,7 @@ if (typeof require !== 'undefined' && require.extensions) {
   require.extensions['.hbs'] = extension;
 }
 
-},{"../dist/cjs/handlebars":16,"../dist/cjs/handlebars/compiler/printer":26,"fs":3}],46:[function(require,module,exports){
+},{"../dist/cjs/handlebars":16,"../dist/cjs/handlebars/compiler/printer":26,"fs":1}],46:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -7580,1721 +7580,6 @@ module.exports = function isObject(x) {
 };
 
 },{}],49:[function(require,module,exports){
-(function (global){
-/*
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
- */
-
-(function(global) {
-  'use strict';
-
-  var testingExposeCycleCount = global.testingExposeCycleCount;
-
-  // Detect and do basic sanity checking on Object/Array.observe.
-  function detectObjectObserve() {
-    if (typeof Object.observe !== 'function' ||
-        typeof Array.observe !== 'function') {
-      return false;
-    }
-
-    var records = [];
-
-    function callback(recs) {
-      records = recs;
-    }
-
-    var test = {};
-    var arr = [];
-    Object.observe(test, callback);
-    Array.observe(arr, callback);
-    test.id = 1;
-    test.id = 2;
-    delete test.id;
-    arr.push(1, 2);
-    arr.length = 0;
-
-    Object.deliverChangeRecords(callback);
-    if (records.length !== 5)
-      return false;
-
-    if (records[0].type != 'add' ||
-        records[1].type != 'update' ||
-        records[2].type != 'delete' ||
-        records[3].type != 'splice' ||
-        records[4].type != 'splice') {
-      return false;
-    }
-
-    Object.unobserve(test, callback);
-    Array.unobserve(arr, callback);
-
-    return true;
-  }
-
-  var hasObserve = detectObjectObserve();
-
-  function detectEval() {
-    // Don't test for eval if we're running in a Chrome App environment.
-    // We check for APIs set that only exist in a Chrome App context.
-    if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
-      return false;
-    }
-
-    // Firefox OS Apps do not allow eval. This feature detection is very hacky
-    // but even if some other platform adds support for this function this code
-    // will continue to work.
-    if (typeof navigator != 'undefined' && navigator.getDeviceStorage) {
-      return false;
-    }
-
-    try {
-      var f = new Function('', 'return true;');
-      return f();
-    } catch (ex) {
-      return false;
-    }
-  }
-
-  var hasEval = detectEval();
-
-  function isIndex(s) {
-    return +s === s >>> 0 && s !== '';
-  }
-
-  function toNumber(s) {
-    return +s;
-  }
-
-  function isObject(obj) {
-    return obj === Object(obj);
-  }
-
-  var numberIsNaN = global.Number.isNaN || function(value) {
-    return typeof value === 'number' && global.isNaN(value);
-  }
-
-  function areSameValue(left, right) {
-    if (left === right)
-      return left !== 0 || 1 / left === 1 / right;
-    if (numberIsNaN(left) && numberIsNaN(right))
-      return true;
-
-    return left !== left && right !== right;
-  }
-
-  var createObject = ('__proto__' in {}) ?
-    function(obj) { return obj; } :
-    function(obj) {
-      var proto = obj.__proto__;
-      if (!proto)
-        return obj;
-      var newObject = Object.create(proto);
-      Object.getOwnPropertyNames(obj).forEach(function(name) {
-        Object.defineProperty(newObject, name,
-                             Object.getOwnPropertyDescriptor(obj, name));
-      });
-      return newObject;
-    };
-
-  var identStart = '[\$_a-zA-Z]';
-  var identPart = '[\$_a-zA-Z0-9]';
-  var identRegExp = new RegExp('^' + identStart + '+' + identPart + '*' + '$');
-
-  function getPathCharType(char) {
-    if (char === undefined)
-      return 'eof';
-
-    var code = char.charCodeAt(0);
-
-    switch(code) {
-      case 0x5B: // [
-      case 0x5D: // ]
-      case 0x2E: // .
-      case 0x22: // "
-      case 0x27: // '
-      case 0x30: // 0
-        return char;
-
-      case 0x5F: // _
-      case 0x24: // $
-        return 'ident';
-
-      case 0x20: // Space
-      case 0x09: // Tab
-      case 0x0A: // Newline
-      case 0x0D: // Return
-      case 0xA0:  // No-break space
-      case 0xFEFF:  // Byte Order Mark
-      case 0x2028:  // Line Separator
-      case 0x2029:  // Paragraph Separator
-        return 'ws';
-    }
-
-    // a-z, A-Z
-    if ((0x61 <= code && code <= 0x7A) || (0x41 <= code && code <= 0x5A))
-      return 'ident';
-
-    // 1-9
-    if (0x31 <= code && code <= 0x39)
-      return 'number';
-
-    return 'else';
-  }
-
-  var pathStateMachine = {
-    'beforePath': {
-      'ws': ['beforePath'],
-      'ident': ['inIdent', 'append'],
-      '[': ['beforeElement'],
-      'eof': ['afterPath']
-    },
-
-    'inPath': {
-      'ws': ['inPath'],
-      '.': ['beforeIdent'],
-      '[': ['beforeElement'],
-      'eof': ['afterPath']
-    },
-
-    'beforeIdent': {
-      'ws': ['beforeIdent'],
-      'ident': ['inIdent', 'append']
-    },
-
-    'inIdent': {
-      'ident': ['inIdent', 'append'],
-      '0': ['inIdent', 'append'],
-      'number': ['inIdent', 'append'],
-      'ws': ['inPath', 'push'],
-      '.': ['beforeIdent', 'push'],
-      '[': ['beforeElement', 'push'],
-      'eof': ['afterPath', 'push']
-    },
-
-    'beforeElement': {
-      'ws': ['beforeElement'],
-      '0': ['afterZero', 'append'],
-      'number': ['inIndex', 'append'],
-      "'": ['inSingleQuote', 'append', ''],
-      '"': ['inDoubleQuote', 'append', '']
-    },
-
-    'afterZero': {
-      'ws': ['afterElement', 'push'],
-      ']': ['inPath', 'push']
-    },
-
-    'inIndex': {
-      '0': ['inIndex', 'append'],
-      'number': ['inIndex', 'append'],
-      'ws': ['afterElement'],
-      ']': ['inPath', 'push']
-    },
-
-    'inSingleQuote': {
-      "'": ['afterElement'],
-      'eof': ['error'],
-      'else': ['inSingleQuote', 'append']
-    },
-
-    'inDoubleQuote': {
-      '"': ['afterElement'],
-      'eof': ['error'],
-      'else': ['inDoubleQuote', 'append']
-    },
-
-    'afterElement': {
-      'ws': ['afterElement'],
-      ']': ['inPath', 'push']
-    }
-  }
-
-  function noop() {}
-
-  function parsePath(path) {
-    var keys = [];
-    var index = -1;
-    var c, newChar, key, type, transition, action, typeMap, mode = 'beforePath';
-
-    var actions = {
-      push: function() {
-        if (key === undefined)
-          return;
-
-        keys.push(key);
-        key = undefined;
-      },
-
-      append: function() {
-        if (key === undefined)
-          key = newChar
-        else
-          key += newChar;
-      }
-    };
-
-    function maybeUnescapeQuote() {
-      if (index >= path.length)
-        return;
-
-      var nextChar = path[index + 1];
-      if ((mode == 'inSingleQuote' && nextChar == "'") ||
-          (mode == 'inDoubleQuote' && nextChar == '"')) {
-        index++;
-        newChar = nextChar;
-        actions.append();
-        return true;
-      }
-    }
-
-    while (mode) {
-      index++;
-      c = path[index];
-
-      if (c == '\\' && maybeUnescapeQuote(mode))
-        continue;
-
-      type = getPathCharType(c);
-      typeMap = pathStateMachine[mode];
-      transition = typeMap[type] || typeMap['else'] || 'error';
-
-      if (transition == 'error')
-        return; // parse error;
-
-      mode = transition[0];
-      action = actions[transition[1]] || noop;
-      newChar = transition[2] === undefined ? c : transition[2];
-      action();
-
-      if (mode === 'afterPath') {
-        return keys;
-      }
-    }
-
-    return; // parse error
-  }
-
-  function isIdent(s) {
-    return identRegExp.test(s);
-  }
-
-  var constructorIsPrivate = {};
-
-  function Path(parts, privateToken) {
-    if (privateToken !== constructorIsPrivate)
-      throw Error('Use Path.get to retrieve path objects');
-
-    for (var i = 0; i < parts.length; i++) {
-      this.push(String(parts[i]));
-    }
-
-    if (hasEval && this.length) {
-      this.getValueFrom = this.compiledGetValueFromFn();
-    }
-  }
-
-  // TODO(rafaelw): Make simple LRU cache
-  var pathCache = {};
-
-  function getPath(pathString) {
-    if (pathString instanceof Path)
-      return pathString;
-
-    if (pathString == null || pathString.length == 0)
-      pathString = '';
-
-    if (typeof pathString != 'string') {
-      if (isIndex(pathString.length)) {
-        // Constructed with array-like (pre-parsed) keys
-        return new Path(pathString, constructorIsPrivate);
-      }
-
-      pathString = String(pathString);
-    }
-
-    var path = pathCache[pathString];
-    if (path)
-      return path;
-
-    var parts = parsePath(pathString);
-    if (!parts)
-      return invalidPath;
-
-    var path = new Path(parts, constructorIsPrivate);
-    pathCache[pathString] = path;
-    return path;
-  }
-
-  Path.get = getPath;
-
-  function formatAccessor(key) {
-    if (isIndex(key)) {
-      return '[' + key + ']';
-    } else {
-      return '["' + key.replace(/"/g, '\\"') + '"]';
-    }
-  }
-
-  Path.prototype = createObject({
-    __proto__: [],
-    valid: true,
-
-    toString: function() {
-      var pathString = '';
-      for (var i = 0; i < this.length; i++) {
-        var key = this[i];
-        if (isIdent(key)) {
-          pathString += i ? '.' + key : key;
-        } else {
-          pathString += formatAccessor(key);
-        }
-      }
-
-      return pathString;
-    },
-
-    getValueFrom: function(obj, directObserver) {
-      for (var i = 0; i < this.length; i++) {
-        if (obj == null)
-          return;
-        obj = obj[this[i]];
-      }
-      return obj;
-    },
-
-    iterateObjects: function(obj, observe) {
-      for (var i = 0; i < this.length; i++) {
-        if (i)
-          obj = obj[this[i - 1]];
-        if (!isObject(obj))
-          return;
-        observe(obj, this[i]);
-      }
-    },
-
-    compiledGetValueFromFn: function() {
-      var str = '';
-      var pathString = 'obj';
-      str += 'if (obj != null';
-      var i = 0;
-      var key;
-      for (; i < (this.length - 1); i++) {
-        key = this[i];
-        pathString += isIdent(key) ? '.' + key : formatAccessor(key);
-        str += ' &&\n     ' + pathString + ' != null';
-      }
-      str += ')\n';
-
-      var key = this[i];
-      pathString += isIdent(key) ? '.' + key : formatAccessor(key);
-
-      str += '  return ' + pathString + ';\nelse\n  return undefined;';
-      return new Function('obj', str);
-    },
-
-    setValueFrom: function(obj, value) {
-      if (!this.length)
-        return false;
-
-      for (var i = 0; i < this.length - 1; i++) {
-        if (!isObject(obj))
-          return false;
-        obj = obj[this[i]];
-      }
-
-      if (!isObject(obj))
-        return false;
-
-      obj[this[i]] = value;
-      return true;
-    }
-  });
-
-  var invalidPath = new Path('', constructorIsPrivate);
-  invalidPath.valid = false;
-  invalidPath.getValueFrom = invalidPath.setValueFrom = function() {};
-
-  var MAX_DIRTY_CHECK_CYCLES = 1000;
-
-  function dirtyCheck(observer) {
-    var cycles = 0;
-    while (cycles < MAX_DIRTY_CHECK_CYCLES && observer.check_()) {
-      cycles++;
-    }
-    if (testingExposeCycleCount)
-      global.dirtyCheckCycleCount = cycles;
-
-    return cycles > 0;
-  }
-
-  function objectIsEmpty(object) {
-    for (var prop in object)
-      return false;
-    return true;
-  }
-
-  function diffIsEmpty(diff) {
-    return objectIsEmpty(diff.added) &&
-           objectIsEmpty(diff.removed) &&
-           objectIsEmpty(diff.changed);
-  }
-
-  function diffObjectFromOldObject(object, oldObject) {
-    var added = {};
-    var removed = {};
-    var changed = {};
-
-    for (var prop in oldObject) {
-      var newValue = object[prop];
-
-      if (newValue !== undefined && newValue === oldObject[prop])
-        continue;
-
-      if (!(prop in object)) {
-        removed[prop] = undefined;
-        continue;
-      }
-
-      if (newValue !== oldObject[prop])
-        changed[prop] = newValue;
-    }
-
-    for (var prop in object) {
-      if (prop in oldObject)
-        continue;
-
-      added[prop] = object[prop];
-    }
-
-    if (Array.isArray(object) && object.length !== oldObject.length)
-      changed.length = object.length;
-
-    return {
-      added: added,
-      removed: removed,
-      changed: changed
-    };
-  }
-
-  var eomTasks = [];
-  function runEOMTasks() {
-    if (!eomTasks.length)
-      return false;
-
-    for (var i = 0; i < eomTasks.length; i++) {
-      eomTasks[i]();
-    }
-    eomTasks.length = 0;
-    return true;
-  }
-
-  var runEOM = hasObserve ? (function(){
-    return function(fn) {
-      return Promise.resolve().then(fn);
-    }
-  })() :
-  (function() {
-    return function(fn) {
-      eomTasks.push(fn);
-    };
-  })();
-
-  var observedObjectCache = [];
-
-  function newObservedObject() {
-    var observer;
-    var object;
-    var discardRecords = false;
-    var first = true;
-
-    function callback(records) {
-      if (observer && observer.state_ === OPENED && !discardRecords)
-        observer.check_(records);
-    }
-
-    return {
-      open: function(obs) {
-        if (observer)
-          throw Error('ObservedObject in use');
-
-        if (!first)
-          Object.deliverChangeRecords(callback);
-
-        observer = obs;
-        first = false;
-      },
-      observe: function(obj, arrayObserve) {
-        object = obj;
-        if (arrayObserve)
-          Array.observe(object, callback);
-        else
-          Object.observe(object, callback);
-      },
-      deliver: function(discard) {
-        discardRecords = discard;
-        Object.deliverChangeRecords(callback);
-        discardRecords = false;
-      },
-      close: function() {
-        observer = undefined;
-        Object.unobserve(object, callback);
-        observedObjectCache.push(this);
-      }
-    };
-  }
-
-  /*
-   * The observedSet abstraction is a perf optimization which reduces the total
-   * number of Object.observe observations of a set of objects. The idea is that
-   * groups of Observers will have some object dependencies in common and this
-   * observed set ensures that each object in the transitive closure of
-   * dependencies is only observed once. The observedSet acts as a write barrier
-   * such that whenever any change comes through, all Observers are checked for
-   * changed values.
-   *
-   * Note that this optimization is explicitly moving work from setup-time to
-   * change-time.
-   *
-   * TODO(rafaelw): Implement "garbage collection". In order to move work off
-   * the critical path, when Observers are closed, their observed objects are
-   * not Object.unobserve(d). As a result, it's possible that if the observedSet
-   * is kept open, but some Observers have been closed, it could cause "leaks"
-   * (prevent otherwise collectable objects from being collected). At some
-   * point, we should implement incremental "gc" which keeps a list of
-   * observedSets which may need clean-up and does small amounts of cleanup on a
-   * timeout until all is clean.
-   */
-
-  function getObservedObject(observer, object, arrayObserve) {
-    var dir = observedObjectCache.pop() || newObservedObject();
-    dir.open(observer);
-    dir.observe(object, arrayObserve);
-    return dir;
-  }
-
-  var observedSetCache = [];
-
-  function newObservedSet() {
-    var observerCount = 0;
-    var observers = [];
-    var objects = [];
-    var rootObj;
-    var rootObjProps;
-
-    function observe(obj, prop) {
-      if (!obj)
-        return;
-
-      if (obj === rootObj)
-        rootObjProps[prop] = true;
-
-      if (objects.indexOf(obj) < 0) {
-        objects.push(obj);
-        Object.observe(obj, callback);
-      }
-
-      observe(Object.getPrototypeOf(obj), prop);
-    }
-
-    function allRootObjNonObservedProps(recs) {
-      for (var i = 0; i < recs.length; i++) {
-        var rec = recs[i];
-        if (rec.object !== rootObj ||
-            rootObjProps[rec.name] ||
-            rec.type === 'setPrototype') {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    function callback(recs) {
-      if (allRootObjNonObservedProps(recs))
-        return;
-
-      var observer;
-      for (var i = 0; i < observers.length; i++) {
-        observer = observers[i];
-        if (observer.state_ == OPENED) {
-          observer.iterateObjects_(observe);
-        }
-      }
-
-      for (var i = 0; i < observers.length; i++) {
-        observer = observers[i];
-        if (observer.state_ == OPENED) {
-          observer.check_();
-        }
-      }
-    }
-
-    var record = {
-      objects: objects,
-      get rootObject() { return rootObj; },
-      set rootObject(value) {
-        rootObj = value;
-        rootObjProps = {};
-      },
-      open: function(obs, object) {
-        observers.push(obs);
-        observerCount++;
-        obs.iterateObjects_(observe);
-      },
-      close: function(obs) {
-        observerCount--;
-        if (observerCount > 0) {
-          return;
-        }
-
-        for (var i = 0; i < objects.length; i++) {
-          Object.unobserve(objects[i], callback);
-          Observer.unobservedCount++;
-        }
-
-        observers.length = 0;
-        objects.length = 0;
-        rootObj = undefined;
-        rootObjProps = undefined;
-        observedSetCache.push(this);
-        if (lastObservedSet === this)
-          lastObservedSet = null;
-      },
-    };
-
-    return record;
-  }
-
-  var lastObservedSet;
-
-  function getObservedSet(observer, obj) {
-    if (!lastObservedSet || lastObservedSet.rootObject !== obj) {
-      lastObservedSet = observedSetCache.pop() || newObservedSet();
-      lastObservedSet.rootObject = obj;
-    }
-    lastObservedSet.open(observer, obj);
-    return lastObservedSet;
-  }
-
-  var UNOPENED = 0;
-  var OPENED = 1;
-  var CLOSED = 2;
-  var RESETTING = 3;
-
-  var nextObserverId = 1;
-
-  function Observer() {
-    this.state_ = UNOPENED;
-    this.callback_ = undefined;
-    this.target_ = undefined; // TODO(rafaelw): Should be WeakRef
-    this.directObserver_ = undefined;
-    this.value_ = undefined;
-    this.id_ = nextObserverId++;
-  }
-
-  Observer.prototype = {
-    open: function(callback, target) {
-      if (this.state_ != UNOPENED)
-        throw Error('Observer has already been opened.');
-
-      addToAll(this);
-      this.callback_ = callback;
-      this.target_ = target;
-      this.connect_();
-      this.state_ = OPENED;
-      return this.value_;
-    },
-
-    close: function() {
-      if (this.state_ != OPENED)
-        return;
-
-      removeFromAll(this);
-      this.disconnect_();
-      this.value_ = undefined;
-      this.callback_ = undefined;
-      this.target_ = undefined;
-      this.state_ = CLOSED;
-    },
-
-    deliver: function() {
-      if (this.state_ != OPENED)
-        return;
-
-      dirtyCheck(this);
-    },
-
-    report_: function(changes) {
-      try {
-        this.callback_.apply(this.target_, changes);
-      } catch (ex) {
-        Observer._errorThrownDuringCallback = true;
-        console.error('Exception caught during observer callback: ' +
-                       (ex.stack || ex));
-      }
-    },
-
-    discardChanges: function() {
-      this.check_(undefined, true);
-      return this.value_;
-    }
-  }
-
-  var collectObservers = !hasObserve;
-  var allObservers;
-  Observer._allObserversCount = 0;
-
-  if (collectObservers) {
-    allObservers = [];
-  }
-
-  function addToAll(observer) {
-    Observer._allObserversCount++;
-    if (!collectObservers)
-      return;
-
-    allObservers.push(observer);
-  }
-
-  function removeFromAll(observer) {
-    Observer._allObserversCount--;
-  }
-
-  var runningMicrotaskCheckpoint = false;
-
-  global.Platform = global.Platform || {};
-
-  global.Platform.performMicrotaskCheckpoint = function() {
-    if (runningMicrotaskCheckpoint)
-      return;
-
-    if (!collectObservers)
-      return;
-
-    runningMicrotaskCheckpoint = true;
-
-    var cycles = 0;
-    var anyChanged, toCheck;
-
-    do {
-      cycles++;
-      toCheck = allObservers;
-      allObservers = [];
-      anyChanged = false;
-
-      for (var i = 0; i < toCheck.length; i++) {
-        var observer = toCheck[i];
-        if (observer.state_ != OPENED)
-          continue;
-
-        if (observer.check_())
-          anyChanged = true;
-
-        allObservers.push(observer);
-      }
-      if (runEOMTasks())
-        anyChanged = true;
-    } while (cycles < MAX_DIRTY_CHECK_CYCLES && anyChanged);
-
-    if (testingExposeCycleCount)
-      global.dirtyCheckCycleCount = cycles;
-
-    runningMicrotaskCheckpoint = false;
-  };
-
-  if (collectObservers) {
-    global.Platform.clearObservers = function() {
-      allObservers = [];
-    };
-  }
-
-  function ObjectObserver(object) {
-    Observer.call(this);
-    this.value_ = object;
-    this.oldObject_ = undefined;
-  }
-
-  ObjectObserver.prototype = createObject({
-    __proto__: Observer.prototype,
-
-    arrayObserve: false,
-
-    connect_: function(callback, target) {
-      if (hasObserve) {
-        this.directObserver_ = getObservedObject(this, this.value_,
-                                                 this.arrayObserve);
-      } else {
-        this.oldObject_ = this.copyObject(this.value_);
-      }
-
-    },
-
-    copyObject: function(object) {
-      var copy = Array.isArray(object) ? [] : {};
-      for (var prop in object) {
-        copy[prop] = object[prop];
-      };
-      if (Array.isArray(object))
-        copy.length = object.length;
-      return copy;
-    },
-
-    check_: function(changeRecords, skipChanges) {
-      var diff;
-      var oldValues;
-      if (hasObserve) {
-        if (!changeRecords)
-          return false;
-
-        oldValues = {};
-        diff = diffObjectFromChangeRecords(this.value_, changeRecords,
-                                           oldValues);
-      } else {
-        oldValues = this.oldObject_;
-        diff = diffObjectFromOldObject(this.value_, this.oldObject_);
-      }
-
-      if (diffIsEmpty(diff))
-        return false;
-
-      if (!hasObserve)
-        this.oldObject_ = this.copyObject(this.value_);
-
-      this.report_([
-        diff.added || {},
-        diff.removed || {},
-        diff.changed || {},
-        function(property) {
-          return oldValues[property];
-        }
-      ]);
-
-      return true;
-    },
-
-    disconnect_: function() {
-      if (hasObserve) {
-        this.directObserver_.close();
-        this.directObserver_ = undefined;
-      } else {
-        this.oldObject_ = undefined;
-      }
-    },
-
-    deliver: function() {
-      if (this.state_ != OPENED)
-        return;
-
-      if (hasObserve)
-        this.directObserver_.deliver(false);
-      else
-        dirtyCheck(this);
-    },
-
-    discardChanges: function() {
-      if (this.directObserver_)
-        this.directObserver_.deliver(true);
-      else
-        this.oldObject_ = this.copyObject(this.value_);
-
-      return this.value_;
-    }
-  });
-
-  function ArrayObserver(array) {
-    if (!Array.isArray(array))
-      throw Error('Provided object is not an Array');
-    ObjectObserver.call(this, array);
-  }
-
-  ArrayObserver.prototype = createObject({
-
-    __proto__: ObjectObserver.prototype,
-
-    arrayObserve: true,
-
-    copyObject: function(arr) {
-      return arr.slice();
-    },
-
-    check_: function(changeRecords) {
-      var splices;
-      if (hasObserve) {
-        if (!changeRecords)
-          return false;
-        splices = projectArraySplices(this.value_, changeRecords);
-      } else {
-        splices = calcSplices(this.value_, 0, this.value_.length,
-                              this.oldObject_, 0, this.oldObject_.length);
-      }
-
-      if (!splices || !splices.length)
-        return false;
-
-      if (!hasObserve)
-        this.oldObject_ = this.copyObject(this.value_);
-
-      this.report_([splices]);
-      return true;
-    }
-  });
-
-  ArrayObserver.applySplices = function(previous, current, splices) {
-    splices.forEach(function(splice) {
-      var spliceArgs = [splice.index, splice.removed.length];
-      var addIndex = splice.index;
-      while (addIndex < splice.index + splice.addedCount) {
-        spliceArgs.push(current[addIndex]);
-        addIndex++;
-      }
-
-      Array.prototype.splice.apply(previous, spliceArgs);
-    });
-  };
-
-  function PathObserver(object, path) {
-    Observer.call(this);
-
-    this.object_ = object;
-    this.path_ = getPath(path);
-    this.directObserver_ = undefined;
-  }
-
-  PathObserver.prototype = createObject({
-    __proto__: Observer.prototype,
-
-    get path() {
-      return this.path_;
-    },
-
-    connect_: function() {
-      if (hasObserve)
-        this.directObserver_ = getObservedSet(this, this.object_);
-
-      this.check_(undefined, true);
-    },
-
-    disconnect_: function() {
-      this.value_ = undefined;
-
-      if (this.directObserver_) {
-        this.directObserver_.close(this);
-        this.directObserver_ = undefined;
-      }
-    },
-
-    iterateObjects_: function(observe) {
-      this.path_.iterateObjects(this.object_, observe);
-    },
-
-    check_: function(changeRecords, skipChanges) {
-      var oldValue = this.value_;
-      this.value_ = this.path_.getValueFrom(this.object_);
-      if (skipChanges || areSameValue(this.value_, oldValue))
-        return false;
-
-      this.report_([this.value_, oldValue, this]);
-      return true;
-    },
-
-    setValue: function(newValue) {
-      if (this.path_)
-        this.path_.setValueFrom(this.object_, newValue);
-    }
-  });
-
-  function CompoundObserver(reportChangesOnOpen) {
-    Observer.call(this);
-
-    this.reportChangesOnOpen_ = reportChangesOnOpen;
-    this.value_ = [];
-    this.directObserver_ = undefined;
-    this.observed_ = [];
-  }
-
-  var observerSentinel = {};
-
-  CompoundObserver.prototype = createObject({
-    __proto__: Observer.prototype,
-
-    connect_: function() {
-      if (hasObserve) {
-        var object;
-        var needsDirectObserver = false;
-        for (var i = 0; i < this.observed_.length; i += 2) {
-          object = this.observed_[i]
-          if (object !== observerSentinel) {
-            needsDirectObserver = true;
-            break;
-          }
-        }
-
-        if (needsDirectObserver)
-          this.directObserver_ = getObservedSet(this, object);
-      }
-
-      this.check_(undefined, !this.reportChangesOnOpen_);
-    },
-
-    disconnect_: function() {
-      for (var i = 0; i < this.observed_.length; i += 2) {
-        if (this.observed_[i] === observerSentinel)
-          this.observed_[i + 1].close();
-      }
-      this.observed_.length = 0;
-      this.value_.length = 0;
-
-      if (this.directObserver_) {
-        this.directObserver_.close(this);
-        this.directObserver_ = undefined;
-      }
-    },
-
-    addPath: function(object, path) {
-      if (this.state_ != UNOPENED && this.state_ != RESETTING)
-        throw Error('Cannot add paths once started.');
-
-      var path = getPath(path);
-      this.observed_.push(object, path);
-      if (!this.reportChangesOnOpen_)
-        return;
-      var index = this.observed_.length / 2 - 1;
-      this.value_[index] = path.getValueFrom(object);
-    },
-
-    addObserver: function(observer) {
-      if (this.state_ != UNOPENED && this.state_ != RESETTING)
-        throw Error('Cannot add observers once started.');
-
-      this.observed_.push(observerSentinel, observer);
-      if (!this.reportChangesOnOpen_)
-        return;
-      var index = this.observed_.length / 2 - 1;
-      this.value_[index] = observer.open(this.deliver, this);
-    },
-
-    startReset: function() {
-      if (this.state_ != OPENED)
-        throw Error('Can only reset while open');
-
-      this.state_ = RESETTING;
-      this.disconnect_();
-    },
-
-    finishReset: function() {
-      if (this.state_ != RESETTING)
-        throw Error('Can only finishReset after startReset');
-      this.state_ = OPENED;
-      this.connect_();
-
-      return this.value_;
-    },
-
-    iterateObjects_: function(observe) {
-      var object;
-      for (var i = 0; i < this.observed_.length; i += 2) {
-        object = this.observed_[i]
-        if (object !== observerSentinel)
-          this.observed_[i + 1].iterateObjects(object, observe)
-      }
-    },
-
-    check_: function(changeRecords, skipChanges) {
-      var oldValues;
-      for (var i = 0; i < this.observed_.length; i += 2) {
-        var object = this.observed_[i];
-        var path = this.observed_[i+1];
-        var value;
-        if (object === observerSentinel) {
-          var observable = path;
-          value = this.state_ === UNOPENED ?
-              observable.open(this.deliver, this) :
-              observable.discardChanges();
-        } else {
-          value = path.getValueFrom(object);
-        }
-
-        if (skipChanges) {
-          this.value_[i / 2] = value;
-          continue;
-        }
-
-        if (areSameValue(value, this.value_[i / 2]))
-          continue;
-
-        oldValues = oldValues || [];
-        oldValues[i / 2] = this.value_[i / 2];
-        this.value_[i / 2] = value;
-      }
-
-      if (!oldValues)
-        return false;
-
-      // TODO(rafaelw): Having observed_ as the third callback arg here is
-      // pretty lame API. Fix.
-      this.report_([this.value_, oldValues, this.observed_]);
-      return true;
-    }
-  });
-
-  function identFn(value) { return value; }
-
-  function ObserverTransform(observable, getValueFn, setValueFn,
-                             dontPassThroughSet) {
-    this.callback_ = undefined;
-    this.target_ = undefined;
-    this.value_ = undefined;
-    this.observable_ = observable;
-    this.getValueFn_ = getValueFn || identFn;
-    this.setValueFn_ = setValueFn || identFn;
-    // TODO(rafaelw): This is a temporary hack. PolymerExpressions needs this
-    // at the moment because of a bug in it's dependency tracking.
-    this.dontPassThroughSet_ = dontPassThroughSet;
-  }
-
-  ObserverTransform.prototype = {
-    open: function(callback, target) {
-      this.callback_ = callback;
-      this.target_ = target;
-      this.value_ =
-          this.getValueFn_(this.observable_.open(this.observedCallback_, this));
-      return this.value_;
-    },
-
-    observedCallback_: function(value) {
-      value = this.getValueFn_(value);
-      if (areSameValue(value, this.value_))
-        return;
-      var oldValue = this.value_;
-      this.value_ = value;
-      this.callback_.call(this.target_, this.value_, oldValue);
-    },
-
-    discardChanges: function() {
-      this.value_ = this.getValueFn_(this.observable_.discardChanges());
-      return this.value_;
-    },
-
-    deliver: function() {
-      return this.observable_.deliver();
-    },
-
-    setValue: function(value) {
-      value = this.setValueFn_(value);
-      if (!this.dontPassThroughSet_ && this.observable_.setValue)
-        return this.observable_.setValue(value);
-    },
-
-    close: function() {
-      if (this.observable_)
-        this.observable_.close();
-      this.callback_ = undefined;
-      this.target_ = undefined;
-      this.observable_ = undefined;
-      this.value_ = undefined;
-      this.getValueFn_ = undefined;
-      this.setValueFn_ = undefined;
-    }
-  }
-
-  var expectedRecordTypes = {
-    add: true,
-    update: true,
-    delete: true
-  };
-
-  function diffObjectFromChangeRecords(object, changeRecords, oldValues) {
-    var added = {};
-    var removed = {};
-
-    for (var i = 0; i < changeRecords.length; i++) {
-      var record = changeRecords[i];
-      if (!expectedRecordTypes[record.type]) {
-        console.error('Unknown changeRecord type: ' + record.type);
-        console.error(record);
-        continue;
-      }
-
-      if (!(record.name in oldValues))
-        oldValues[record.name] = record.oldValue;
-
-      if (record.type == 'update')
-        continue;
-
-      if (record.type == 'add') {
-        if (record.name in removed)
-          delete removed[record.name];
-        else
-          added[record.name] = true;
-
-        continue;
-      }
-
-      // type = 'delete'
-      if (record.name in added) {
-        delete added[record.name];
-        delete oldValues[record.name];
-      } else {
-        removed[record.name] = true;
-      }
-    }
-
-    for (var prop in added)
-      added[prop] = object[prop];
-
-    for (var prop in removed)
-      removed[prop] = undefined;
-
-    var changed = {};
-    for (var prop in oldValues) {
-      if (prop in added || prop in removed)
-        continue;
-
-      var newValue = object[prop];
-      if (oldValues[prop] !== newValue)
-        changed[prop] = newValue;
-    }
-
-    return {
-      added: added,
-      removed: removed,
-      changed: changed
-    };
-  }
-
-  function newSplice(index, removed, addedCount) {
-    return {
-      index: index,
-      removed: removed,
-      addedCount: addedCount
-    };
-  }
-
-  var EDIT_LEAVE = 0;
-  var EDIT_UPDATE = 1;
-  var EDIT_ADD = 2;
-  var EDIT_DELETE = 3;
-
-  function ArraySplice() {}
-
-  ArraySplice.prototype = {
-
-    // Note: This function is *based* on the computation of the Levenshtein
-    // "edit" distance. The one change is that "updates" are treated as two
-    // edits - not one. With Array splices, an update is really a delete
-    // followed by an add. By retaining this, we optimize for "keeping" the
-    // maximum array items in the original array. For example:
-    //
-    //   'xxxx123' -> '123yyyy'
-    //
-    // With 1-edit updates, the shortest path would be just to update all seven
-    // characters. With 2-edit updates, we delete 4, leave 3, and add 4. This
-    // leaves the substring '123' intact.
-    calcEditDistances: function(current, currentStart, currentEnd,
-                                old, oldStart, oldEnd) {
-      // "Deletion" columns
-      var rowCount = oldEnd - oldStart + 1;
-      var columnCount = currentEnd - currentStart + 1;
-      var distances = new Array(rowCount);
-
-      // "Addition" rows. Initialize null column.
-      for (var i = 0; i < rowCount; i++) {
-        distances[i] = new Array(columnCount);
-        distances[i][0] = i;
-      }
-
-      // Initialize null row
-      for (var j = 0; j < columnCount; j++)
-        distances[0][j] = j;
-
-      for (var i = 1; i < rowCount; i++) {
-        for (var j = 1; j < columnCount; j++) {
-          if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1]))
-            distances[i][j] = distances[i - 1][j - 1];
-          else {
-            var north = distances[i - 1][j] + 1;
-            var west = distances[i][j - 1] + 1;
-            distances[i][j] = north < west ? north : west;
-          }
-        }
-      }
-
-      return distances;
-    },
-
-    // This starts at the final weight, and walks "backward" by finding
-    // the minimum previous weight recursively until the origin of the weight
-    // matrix.
-    spliceOperationsFromEditDistances: function(distances) {
-      var i = distances.length - 1;
-      var j = distances[0].length - 1;
-      var current = distances[i][j];
-      var edits = [];
-      while (i > 0 || j > 0) {
-        if (i == 0) {
-          edits.push(EDIT_ADD);
-          j--;
-          continue;
-        }
-        if (j == 0) {
-          edits.push(EDIT_DELETE);
-          i--;
-          continue;
-        }
-        var northWest = distances[i - 1][j - 1];
-        var west = distances[i - 1][j];
-        var north = distances[i][j - 1];
-
-        var min;
-        if (west < north)
-          min = west < northWest ? west : northWest;
-        else
-          min = north < northWest ? north : northWest;
-
-        if (min == northWest) {
-          if (northWest == current) {
-            edits.push(EDIT_LEAVE);
-          } else {
-            edits.push(EDIT_UPDATE);
-            current = northWest;
-          }
-          i--;
-          j--;
-        } else if (min == west) {
-          edits.push(EDIT_DELETE);
-          i--;
-          current = west;
-        } else {
-          edits.push(EDIT_ADD);
-          j--;
-          current = north;
-        }
-      }
-
-      edits.reverse();
-      return edits;
-    },
-
-    /**
-     * Splice Projection functions:
-     *
-     * A splice map is a representation of how a previous array of items
-     * was transformed into a new array of items. Conceptually it is a list of
-     * tuples of
-     *
-     *   <index, removed, addedCount>
-     *
-     * which are kept in ascending index order of. The tuple represents that at
-     * the |index|, |removed| sequence of items were removed, and counting forward
-     * from |index|, |addedCount| items were added.
-     */
-
-    /**
-     * Lacking individual splice mutation information, the minimal set of
-     * splices can be synthesized given the previous state and final state of an
-     * array. The basic approach is to calculate the edit distance matrix and
-     * choose the shortest path through it.
-     *
-     * Complexity: O(l * p)
-     *   l: The length of the current array
-     *   p: The length of the old array
-     */
-    calcSplices: function(current, currentStart, currentEnd,
-                          old, oldStart, oldEnd) {
-      var prefixCount = 0;
-      var suffixCount = 0;
-
-      var minLength = Math.min(currentEnd - currentStart, oldEnd - oldStart);
-      if (currentStart == 0 && oldStart == 0)
-        prefixCount = this.sharedPrefix(current, old, minLength);
-
-      if (currentEnd == current.length && oldEnd == old.length)
-        suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
-
-      currentStart += prefixCount;
-      oldStart += prefixCount;
-      currentEnd -= suffixCount;
-      oldEnd -= suffixCount;
-
-      if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0)
-        return [];
-
-      if (currentStart == currentEnd) {
-        var splice = newSplice(currentStart, [], 0);
-        while (oldStart < oldEnd)
-          splice.removed.push(old[oldStart++]);
-
-        return [ splice ];
-      } else if (oldStart == oldEnd)
-        return [ newSplice(currentStart, [], currentEnd - currentStart) ];
-
-      var ops = this.spliceOperationsFromEditDistances(
-          this.calcEditDistances(current, currentStart, currentEnd,
-                                 old, oldStart, oldEnd));
-
-      var splice = undefined;
-      var splices = [];
-      var index = currentStart;
-      var oldIndex = oldStart;
-      for (var i = 0; i < ops.length; i++) {
-        switch(ops[i]) {
-          case EDIT_LEAVE:
-            if (splice) {
-              splices.push(splice);
-              splice = undefined;
-            }
-
-            index++;
-            oldIndex++;
-            break;
-          case EDIT_UPDATE:
-            if (!splice)
-              splice = newSplice(index, [], 0);
-
-            splice.addedCount++;
-            index++;
-
-            splice.removed.push(old[oldIndex]);
-            oldIndex++;
-            break;
-          case EDIT_ADD:
-            if (!splice)
-              splice = newSplice(index, [], 0);
-
-            splice.addedCount++;
-            index++;
-            break;
-          case EDIT_DELETE:
-            if (!splice)
-              splice = newSplice(index, [], 0);
-
-            splice.removed.push(old[oldIndex]);
-            oldIndex++;
-            break;
-        }
-      }
-
-      if (splice) {
-        splices.push(splice);
-      }
-      return splices;
-    },
-
-    sharedPrefix: function(current, old, searchLength) {
-      for (var i = 0; i < searchLength; i++)
-        if (!this.equals(current[i], old[i]))
-          return i;
-      return searchLength;
-    },
-
-    sharedSuffix: function(current, old, searchLength) {
-      var index1 = current.length;
-      var index2 = old.length;
-      var count = 0;
-      while (count < searchLength && this.equals(current[--index1], old[--index2]))
-        count++;
-
-      return count;
-    },
-
-    calculateSplices: function(current, previous) {
-      return this.calcSplices(current, 0, current.length, previous, 0,
-                              previous.length);
-    },
-
-    equals: function(currentValue, previousValue) {
-      return currentValue === previousValue;
-    }
-  };
-
-  var arraySplice = new ArraySplice();
-
-  function calcSplices(current, currentStart, currentEnd,
-                       old, oldStart, oldEnd) {
-    return arraySplice.calcSplices(current, currentStart, currentEnd,
-                                   old, oldStart, oldEnd);
-  }
-
-  function intersect(start1, end1, start2, end2) {
-    // Disjoint
-    if (end1 < start2 || end2 < start1)
-      return -1;
-
-    // Adjacent
-    if (end1 == start2 || end2 == start1)
-      return 0;
-
-    // Non-zero intersect, span1 first
-    if (start1 < start2) {
-      if (end1 < end2)
-        return end1 - start2; // Overlap
-      else
-        return end2 - start2; // Contained
-    } else {
-      // Non-zero intersect, span2 first
-      if (end2 < end1)
-        return end2 - start1; // Overlap
-      else
-        return end1 - start1; // Contained
-    }
-  }
-
-  function mergeSplice(splices, index, removed, addedCount) {
-
-    var splice = newSplice(index, removed, addedCount);
-
-    var inserted = false;
-    var insertionOffset = 0;
-
-    for (var i = 0; i < splices.length; i++) {
-      var current = splices[i];
-      current.index += insertionOffset;
-
-      if (inserted)
-        continue;
-
-      var intersectCount = intersect(splice.index,
-                                     splice.index + splice.removed.length,
-                                     current.index,
-                                     current.index + current.addedCount);
-
-      if (intersectCount >= 0) {
-        // Merge the two splices
-
-        splices.splice(i, 1);
-        i--;
-
-        insertionOffset -= current.addedCount - current.removed.length;
-
-        splice.addedCount += current.addedCount - intersectCount;
-        var deleteCount = splice.removed.length +
-                          current.removed.length - intersectCount;
-
-        if (!splice.addedCount && !deleteCount) {
-          // merged splice is a noop. discard.
-          inserted = true;
-        } else {
-          var removed = current.removed;
-
-          if (splice.index < current.index) {
-            // some prefix of splice.removed is prepended to current.removed.
-            var prepend = splice.removed.slice(0, current.index - splice.index);
-            Array.prototype.push.apply(prepend, removed);
-            removed = prepend;
-          }
-
-          if (splice.index + splice.removed.length > current.index + current.addedCount) {
-            // some suffix of splice.removed is appended to current.removed.
-            var append = splice.removed.slice(current.index + current.addedCount - splice.index);
-            Array.prototype.push.apply(removed, append);
-          }
-
-          splice.removed = removed;
-          if (current.index < splice.index) {
-            splice.index = current.index;
-          }
-        }
-      } else if (splice.index < current.index) {
-        // Insert splice here.
-
-        inserted = true;
-
-        splices.splice(i, 0, splice);
-        i++;
-
-        var offset = splice.addedCount - splice.removed.length
-        current.index += offset;
-        insertionOffset += offset;
-      }
-    }
-
-    if (!inserted)
-      splices.push(splice);
-  }
-
-  function createInitialSplices(array, changeRecords) {
-    var splices = [];
-
-    for (var i = 0; i < changeRecords.length; i++) {
-      var record = changeRecords[i];
-      switch(record.type) {
-        case 'splice':
-          mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
-          break;
-        case 'add':
-        case 'update':
-        case 'delete':
-          if (!isIndex(record.name))
-            continue;
-          var index = toNumber(record.name);
-          if (index < 0)
-            continue;
-          mergeSplice(splices, index, [record.oldValue], 1);
-          break;
-        default:
-          console.error('Unexpected record type: ' + JSON.stringify(record));
-          break;
-      }
-    }
-
-    return splices;
-  }
-
-  function projectArraySplices(array, changeRecords) {
-    var splices = [];
-
-    createInitialSplices(array, changeRecords).forEach(function(splice) {
-      if (splice.addedCount == 1 && splice.removed.length == 1) {
-        if (splice.removed[0] !== array[splice.index])
-          splices.push(splice);
-
-        return
-      };
-
-      splices = splices.concat(calcSplices(array, splice.index, splice.index + splice.addedCount,
-                                           splice.removed, 0, splice.removed.length));
-    });
-
-    return splices;
-  }
-
-  // Export the observe-js object for **Node.js**, with
-  // backwards-compatibility for the old `require()` API. If we're in
-  // the browser, export as a global object.
-
-  var expose = global;
-
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
-      expose = exports = module.exports;
-    }
-    expose = exports;
-  } 
-
-  expose.Observer = Observer;
-  expose.Observer.runEOM_ = runEOM;
-  expose.Observer.observerSentinel_ = observerSentinel; // for testing.
-  expose.Observer.hasObjectObserve = hasObserve;
-  expose.ArrayObserver = ArrayObserver;
-  expose.ArrayObserver.calculateSplices = function(current, previous) {
-    return arraySplice.calculateSplices(current, previous);
-  };
-
-  expose.ArraySplice = ArraySplice;
-  expose.ObjectObserver = ObjectObserver;
-  expose.PathObserver = PathObserver;
-  expose.CompoundObserver = CompoundObserver;
-  expose.Path = Path;
-  expose.ObserverTransform = ObserverTransform;
-  
-})(typeof global !== 'undefined' && global && typeof module !== 'undefined' && module ? global : this || window);
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],50:[function(require,module,exports){
 /*
  * Copyright 2009-2011 Mozilla Foundation and contributors
  * Licensed under the New BSD license. See LICENSE.txt or:
@@ -9304,7 +7589,7 @@ exports.SourceMapGenerator = require('./source-map/source-map-generator').Source
 exports.SourceMapConsumer = require('./source-map/source-map-consumer').SourceMapConsumer;
 exports.SourceNode = require('./source-map/source-node').SourceNode;
 
-},{"./source-map/source-map-consumer":57,"./source-map/source-map-generator":58,"./source-map/source-node":59}],51:[function(require,module,exports){
+},{"./source-map/source-map-consumer":56,"./source-map/source-map-generator":57,"./source-map/source-node":58}],50:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -9413,7 +7698,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./util":60,"amdefine":9}],52:[function(require,module,exports){
+},{"./util":59,"amdefine":9}],51:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -9561,7 +7846,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./base64":53,"amdefine":9}],53:[function(require,module,exports){
+},{"./base64":52,"amdefine":9}],52:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -9636,7 +7921,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"amdefine":9}],54:[function(require,module,exports){
+},{"amdefine":9}],53:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -9755,7 +8040,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"amdefine":9}],55:[function(require,module,exports){
+},{"amdefine":9}],54:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2014 Mozilla Foundation and contributors
@@ -9843,7 +8128,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./util":60,"amdefine":9}],56:[function(require,module,exports){
+},{"./util":59,"amdefine":9}],55:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -9965,7 +8250,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"amdefine":9}],57:[function(require,module,exports){
+},{"amdefine":9}],56:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -11044,7 +9329,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./array-set":51,"./base64-vlq":52,"./binary-search":54,"./quick-sort":56,"./util":60,"amdefine":9}],58:[function(require,module,exports){
+},{"./array-set":50,"./base64-vlq":51,"./binary-search":53,"./quick-sort":55,"./util":59,"amdefine":9}],57:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -11445,7 +9730,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./array-set":51,"./base64-vlq":52,"./mapping-list":55,"./util":60,"amdefine":9}],59:[function(require,module,exports){
+},{"./array-set":50,"./base64-vlq":51,"./mapping-list":54,"./util":59,"amdefine":9}],58:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -11861,7 +10146,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./source-map-generator":58,"./util":60,"amdefine":9}],60:[function(require,module,exports){
+},{"./source-map-generator":57,"./util":59,"amdefine":9}],59:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -12233,27 +10518,27 @@ define(function (require, exports, module) {
 
 });
 
-},{"amdefine":9}],61:[function(require,module,exports){
+},{"amdefine":9}],60:[function(require,module,exports){
 var createElement = require("./vdom/create-element.js")
 
 module.exports = createElement
 
-},{"./vdom/create-element.js":66}],62:[function(require,module,exports){
+},{"./vdom/create-element.js":65}],61:[function(require,module,exports){
 var diff = require("./vtree/diff.js")
 
 module.exports = diff
 
-},{"./vtree/diff.js":86}],63:[function(require,module,exports){
+},{"./vtree/diff.js":85}],62:[function(require,module,exports){
 var h = require("./virtual-hyperscript/index.js")
 
 module.exports = h
 
-},{"./virtual-hyperscript/index.js":73}],64:[function(require,module,exports){
+},{"./virtual-hyperscript/index.js":72}],63:[function(require,module,exports){
 var patch = require("./vdom/patch.js")
 
 module.exports = patch
 
-},{"./vdom/patch.js":69}],65:[function(require,module,exports){
+},{"./vdom/patch.js":68}],64:[function(require,module,exports){
 var isObject = require("is-object")
 var isHook = require("../vnode/is-vhook.js")
 
@@ -12352,7 +10637,7 @@ function getPrototype(value) {
     }
 }
 
-},{"../vnode/is-vhook.js":77,"is-object":48}],66:[function(require,module,exports){
+},{"../vnode/is-vhook.js":76,"is-object":48}],65:[function(require,module,exports){
 var document = require("global/document")
 
 var applyProperties = require("./apply-properties")
@@ -12400,7 +10685,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vnode/handle-thunk.js":75,"../vnode/is-vnode.js":78,"../vnode/is-vtext.js":79,"../vnode/is-widget.js":80,"./apply-properties":65,"global/document":15}],67:[function(require,module,exports){
+},{"../vnode/handle-thunk.js":74,"../vnode/is-vnode.js":77,"../vnode/is-vtext.js":78,"../vnode/is-widget.js":79,"./apply-properties":64,"global/document":15}],66:[function(require,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -12487,7 +10772,7 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],68:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 var applyProperties = require("./apply-properties")
 
 var isWidget = require("../vnode/is-widget.js")
@@ -12640,7 +10925,7 @@ function replaceRoot(oldRoot, newRoot) {
     return newRoot;
 }
 
-},{"../vnode/is-widget.js":80,"../vnode/vpatch.js":83,"./apply-properties":65,"./update-widget":70}],69:[function(require,module,exports){
+},{"../vnode/is-widget.js":79,"../vnode/vpatch.js":82,"./apply-properties":64,"./update-widget":69}],68:[function(require,module,exports){
 var document = require("global/document")
 var isArray = require("x-is-array")
 
@@ -12722,7 +11007,7 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./create-element":66,"./dom-index":67,"./patch-op":68,"global/document":15,"x-is-array":87}],70:[function(require,module,exports){
+},{"./create-element":65,"./dom-index":66,"./patch-op":67,"global/document":15,"x-is-array":87}],69:[function(require,module,exports){
 var isWidget = require("../vnode/is-widget.js")
 
 module.exports = updateWidget
@@ -12739,7 +11024,7 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vnode/is-widget.js":80}],71:[function(require,module,exports){
+},{"../vnode/is-widget.js":79}],70:[function(require,module,exports){
 'use strict';
 
 var EvStore = require('ev-store');
@@ -12768,7 +11053,7 @@ EvHook.prototype.unhook = function(node, propertyName) {
     es[propName] = undefined;
 };
 
-},{"ev-store":14}],72:[function(require,module,exports){
+},{"ev-store":14}],71:[function(require,module,exports){
 'use strict';
 
 module.exports = SoftSetHook;
@@ -12787,7 +11072,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],73:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 'use strict';
 
 var isArray = require('x-is-array');
@@ -12926,7 +11211,7 @@ function errorString(obj) {
     }
 }
 
-},{"../vnode/is-thunk":76,"../vnode/is-vhook":77,"../vnode/is-vnode":78,"../vnode/is-vtext":79,"../vnode/is-widget":80,"../vnode/vnode.js":82,"../vnode/vtext.js":84,"./hooks/ev-hook.js":71,"./hooks/soft-set-hook.js":72,"./parse-tag.js":74,"x-is-array":87}],74:[function(require,module,exports){
+},{"../vnode/is-thunk":75,"../vnode/is-vhook":76,"../vnode/is-vnode":77,"../vnode/is-vtext":78,"../vnode/is-widget":79,"../vnode/vnode.js":81,"../vnode/vtext.js":83,"./hooks/ev-hook.js":70,"./hooks/soft-set-hook.js":71,"./parse-tag.js":73,"x-is-array":87}],73:[function(require,module,exports){
 'use strict';
 
 var split = require('browser-split');
@@ -12982,7 +11267,7 @@ function parseTag(tag, props) {
     return props.namespace ? tagName : tagName.toUpperCase();
 }
 
-},{"browser-split":10}],75:[function(require,module,exports){
+},{"browser-split":10}],74:[function(require,module,exports){
 var isVNode = require("./is-vnode")
 var isVText = require("./is-vtext")
 var isWidget = require("./is-widget")
@@ -13024,14 +11309,14 @@ function renderThunk(thunk, previous) {
     return renderedThunk
 }
 
-},{"./is-thunk":76,"./is-vnode":78,"./is-vtext":79,"./is-widget":80}],76:[function(require,module,exports){
+},{"./is-thunk":75,"./is-vnode":77,"./is-vtext":78,"./is-widget":79}],75:[function(require,module,exports){
 module.exports = isThunk
 
 function isThunk(t) {
     return t && t.type === "Thunk"
 }
 
-},{}],77:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -13040,7 +11325,7 @@ function isHook(hook) {
        typeof hook.unhook === "function" && !hook.hasOwnProperty("unhook"))
 }
 
-},{}],78:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = isVirtualNode
@@ -13049,7 +11334,7 @@ function isVirtualNode(x) {
     return x && x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":81}],79:[function(require,module,exports){
+},{"./version":80}],78:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = isVirtualText
@@ -13058,17 +11343,17 @@ function isVirtualText(x) {
     return x && x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":81}],80:[function(require,module,exports){
+},{"./version":80}],79:[function(require,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && w.type === "Widget"
 }
 
-},{}],81:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 module.exports = "2"
 
-},{}],82:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 var version = require("./version")
 var isVNode = require("./is-vnode")
 var isWidget = require("./is-widget")
@@ -13142,7 +11427,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-thunk":76,"./is-vhook":77,"./is-vnode":78,"./is-widget":80,"./version":81}],83:[function(require,module,exports){
+},{"./is-thunk":75,"./is-vhook":76,"./is-vnode":77,"./is-widget":79,"./version":80}],82:[function(require,module,exports){
 var version = require("./version")
 
 VirtualPatch.NONE = 0
@@ -13166,7 +11451,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":81}],84:[function(require,module,exports){
+},{"./version":80}],83:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = VirtualText
@@ -13178,7 +11463,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":81}],85:[function(require,module,exports){
+},{"./version":80}],84:[function(require,module,exports){
 var isObject = require("is-object")
 var isHook = require("../vnode/is-vhook")
 
@@ -13245,7 +11530,7 @@ function getPrototype(value) {
   }
 }
 
-},{"../vnode/is-vhook":77,"is-object":48}],86:[function(require,module,exports){
+},{"../vnode/is-vhook":76,"is-object":48}],85:[function(require,module,exports){
 var isArray = require("x-is-array")
 
 var VPatch = require("../vnode/vpatch")
@@ -13674,7 +11959,360 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"../vnode/handle-thunk":75,"../vnode/is-thunk":76,"../vnode/is-vnode":78,"../vnode/is-vtext":79,"../vnode/is-widget":80,"../vnode/vpatch":83,"./diff-props":85,"x-is-array":87}],87:[function(require,module,exports){
+},{"../vnode/handle-thunk":74,"../vnode/is-thunk":75,"../vnode/is-vnode":77,"../vnode/is-vtext":78,"../vnode/is-widget":79,"../vnode/vpatch":82,"./diff-props":84,"x-is-array":87}],86:[function(require,module,exports){
+/**
+ * DEVELOPED BY
+ * GIL LOPES BUENO
+ * gilbueno.mail@gmail.com
+ *
+ * WORKS WITH:
+ * IE 9+, FF 4+, SF 5+, WebKit, CH 7+, OP 12+, BESEN, Rhino 1.7+
+ *
+ * FORK:
+ * https://github.com/melanke/Watch.JS
+ */
+
+"use strict";
+(function (factory) {
+    if (typeof exports === 'object') {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like enviroments that support module.exports,
+        // like Node.
+        module.exports = factory();
+    } else if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(factory);
+    } else {
+        // Browser globals
+        window.WatchJS = factory();
+        window.watch = window.WatchJS.watch;
+        window.unwatch = window.WatchJS.unwatch;
+        window.callWatchers = window.WatchJS.callWatchers;
+    }
+}(function () {
+
+    var WatchJS = {
+        noMore: false
+    },
+    defineWatcher,
+    unwatchOne,
+    callWatchers;
+
+    var isFunction = function (functionToCheck) {
+            var getType = {};
+            return functionToCheck && getType.toString.call(functionToCheck) == '[object Function]';
+    };
+
+    var isInt = function (x) {
+        return x % 1 === 0;
+    };
+
+    var isArray = function(obj) {
+        return Object.prototype.toString.call(obj) === '[object Array]';
+    };
+
+    var isModernBrowser = function () {
+        return Object.defineProperty || Object.prototype.__defineGetter__;
+    };
+
+    var defineGetAndSet = function (obj, propName, getter, setter) {
+        try {
+                Object.defineProperty(obj, propName, {
+                        get: getter,
+                        set: setter,
+                        enumerable: true,
+                        configurable: true
+                });
+        } catch(error) {
+            try{
+                Object.prototype.__defineGetter__.call(obj, propName, getter);
+                Object.prototype.__defineSetter__.call(obj, propName, setter);
+            }catch(error2){
+                throw "watchJS error: browser not supported :/"
+            }
+        }
+    };
+
+    var defineProp = function (obj, propName, value) {
+        try {
+            Object.defineProperty(obj, propName, {
+                enumerable: false,
+                configurable: true,
+                writable: false,
+                value: value
+            });
+        } catch(error) {
+            obj[propName] = value;
+        }
+    };
+
+    var watch = function () {
+
+        if (isFunction(arguments[1])) {
+            watchAll.apply(this, arguments);
+        } else if (isArray(arguments[1])) {
+            watchMany.apply(this, arguments);
+        } else {
+            watchOne.apply(this, arguments);
+        }
+
+    };
+
+
+    var watchAll = function (obj, watcher, level) {
+
+        if (obj instanceof String || (!(obj instanceof Object) && !isArray(obj))) { //accepts only objects and array (not string)
+            return;
+        }
+
+        var props = [];
+
+
+        if(isArray(obj)) {
+            for (var prop = 0; prop < obj.length; prop++) { //for each item if obj is an array
+                props.push(prop); //put in the props
+            }
+        } else {
+            for (var prop2 in obj) { //for each attribute if obj is an object
+                props.push(prop2); //put in the props
+            }
+        }
+
+        watchMany(obj, props, watcher, level); //watch all itens of the props
+    };
+
+
+    var watchMany = function (obj, props, watcher, level) {
+
+        for (var prop in props) { //watch each attribute of "props" if is an object
+            watchOne(obj, props[prop], watcher, level);
+        }
+
+    };
+
+    var watchOne = function (obj, prop, watcher, level) {
+
+        if(isFunction(obj[prop])) { //dont watch if it is a function
+            return;
+        }
+
+        if(obj[prop] != null && (level === undefined || level > 0)){
+            if(level !== undefined){
+                level--;
+            }
+            watchAll(obj[prop], watcher, level); //recursively watch all attributes of this
+        }
+
+        defineWatcher(obj, prop, watcher);
+
+    };
+
+    var unwatch = function () {
+
+        if (isFunction(arguments[1])) {
+            unwatchAll.apply(this, arguments);
+        } else if (isArray(arguments[1])) {
+            unwatchMany.apply(this, arguments);
+        } else {
+            unwatchOne.apply(this, arguments);
+        }
+
+    };
+
+    var unwatchAll = function (obj, watcher) {
+
+        if (obj instanceof String || (!(obj instanceof Object) && !isArray(obj))) { //accepts only objects and array (not string)
+            return;
+        }
+
+        var props = [];
+
+
+        if (isArray(obj)) {
+            for (var prop = 0; prop < obj.length; prop++) { //for each item if obj is an array
+                props.push(prop); //put in the props
+            }
+        } else {
+            for (var prop2 in obj) { //for each attribute if obj is an object
+                props.push(prop2); //put in the props
+            }
+        }
+
+        unwatchMany(obj, props, watcher); //watch all itens of the props
+    };
+
+
+    var unwatchMany = function (obj, props, watcher) {
+
+        for (var prop2 in props) { //watch each attribute of "props" if is an object
+            unwatchOne(obj, props[prop2], watcher);
+        }
+    };
+
+    if(isModernBrowser()){
+
+        defineWatcher = function (obj, prop, watcher) {
+
+            var val = obj[prop];
+
+            watchFunctions(obj, prop);
+
+            if (!obj.watchers) {
+                defineProp(obj, "watchers", {});
+            }
+
+            if (!obj.watchers[prop]) {
+                obj.watchers[prop] = [];
+            }
+
+
+            obj.watchers[prop].push(watcher); //add the new watcher in the watchers array
+
+
+            var getter = function () {
+                return val;
+            };
+
+
+            var setter = function (newval) {
+                var oldval = val;
+                val = newval;
+
+                if (obj[prop]){
+                    watchAll(obj[prop], watcher);
+                }
+
+                watchFunctions(obj, prop);
+
+                if (!WatchJS.noMore){
+                    if (JSON.stringify(oldval) !== JSON.stringify(newval)) {
+                        callWatchers(obj, prop, "set", newval, oldval);
+                        WatchJS.noMore = false;
+                    }
+                }
+            };
+
+            defineGetAndSet(obj, prop, getter, setter);
+
+        };
+
+        callWatchers = function (obj, prop, action, newval, oldval) {
+
+            for (var wr in obj.watchers[prop]) {
+                if (isInt(wr)){
+                    obj.watchers[prop][wr].call(obj, prop, action, newval, oldval);
+                }
+            }
+        };
+
+        // @todo code related to "watchFunctions" is certainly buggy
+        var methodNames = ['pop', 'push', 'reverse', 'shift', 'sort', 'slice', 'unshift'];
+        var defineArrayMethodWatcher = function (obj, prop, original, methodName) {
+            defineProp(obj[prop], methodName, function () {
+                var response = original.apply(obj[prop], arguments);
+                watchOne(obj, obj[prop]);
+                if (methodName !== 'slice') {
+                    callWatchers(obj, prop, methodName,arguments);
+                }
+                return response;
+            });
+        };
+
+        var watchFunctions = function(obj, prop) {
+
+            if ((!obj[prop]) || (obj[prop] instanceof String) || (!isArray(obj[prop]))) {
+                return;
+            }
+
+            for (var i = methodNames.length, methodName; i--;) {
+                methodName = methodNames[i];
+                defineArrayMethodWatcher(obj, prop, obj[prop][methodName], methodName);
+            }
+
+        };
+
+        unwatchOne = function (obj, prop, watcher) {
+            for(var i in obj.watchers[prop]){
+                var w = obj.watchers[prop][i];
+
+                if(w == watcher) {
+                    obj.watchers[prop].splice(i, 1);
+                }
+            }
+        };
+
+    } else {
+        //this implementation dont work because it cant handle the gap between "settings".
+        //I mean, if you use a setter for an attribute after another setter of the same attribute it will only fire the second
+        //but I think we could think something to fix it
+
+        var subjects = [];
+
+        defineWatcher = function(obj, prop, watcher){
+
+            subjects.push({
+                obj: obj,
+                prop: prop,
+                serialized: JSON.stringify(obj[prop]),
+                watcher: watcher
+            });
+
+        };
+
+        unwatchOne = function (obj, prop, watcher) {
+
+            for (var i in subjects) {
+                var subj = subjects[i];
+
+                if (subj.obj == obj && subj.prop == prop && subj.watcher == watcher) {
+                    subjects.splice(i, 1);
+                }
+
+            }
+
+        };
+
+        callWatchers = function (obj, prop, action, value) {
+
+            for (var i in subjects) {
+                var subj = subjects[i];
+
+                if (subj.obj == obj && subj.prop == prop) {
+                    subj.watcher.call(obj, prop, action, value);
+                }
+
+            }
+
+        };
+
+        var loop = function(){
+
+            for(var i in subjects){
+
+                var subj = subjects[i];
+                var newSer = JSON.stringify(subj.obj[subj.prop]);
+                if(newSer != subj.serialized){
+                    subj.watcher.call(subj.obj, subj.prop, subj.obj[subj.prop], JSON.parse(subj.serialized));
+                    subj.serialized = newSer;
+                }
+
+            }
+
+        };
+
+        setInterval(loop, 50);
+
+    }
+
+    WatchJS.watch = watch;
+    WatchJS.unwatch = unwatch;
+    WatchJS.callWatchers = callWatchers;
+
+    return WatchJS;
+
+}));
+
+},{}],87:[function(require,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -15284,8 +13922,8 @@ var createElement = require('virtual-dom/create-element');
 var dom2hscript = require("dom2hscript");
 var Handlebars = require('handlebars');
 var $ = require('zepto-browserify').$;
-var Observer = require("observe-js");
 var clone = require('clone');
+var WatchJS = require("watchjs");
 
 // 1: Create a function that declares what the DOM should look like
 /*function render(count) {
@@ -15334,10 +13972,9 @@ var PhonePack = (function() {
 
             self.selectors[component.selector] = component;
             self.selectors[component.selector].template = component.template;
-            self.selectors[component.selector].render = component.template();
 
             // render inner components
-            if (component.inject) {
+            /*if (component.inject) {
                 component.inject.forEach(function(selector) {
 
                     var pattern = new RegExp('<' + selector + '>(.*?)<\/' + selector + '>', 'g');
@@ -15348,39 +13985,51 @@ var PhonePack = (function() {
                     }
                 });
             }
-            if (renderComponent) self.selectors[component.selector].render = renderComponent;
+            if (renderComponent) self.selectors[component.selector].render = renderComponent;*/
 
             //init component controller
             if (component.controller) {
                 if (!self.selectors[component.selector].controllerInstance)
                     self.selectors[component.selector].controllerInstance = new component.controller();
 
-                for (var attr in self.selectors[component.selector].controllerInstance) {
-                    if (typeof self.selectors[component.selector].controllerInstance[attr] === 'function') {
-                        Handlebars.registerHelper(attr, function(person) {
-                            return new Handlebars.SafeString("(" +
-                                self.selectors[component.selector].controllerInstance[attr].toString().replace(/\"/g, "'") + ")()");
-                        });
-                    }
-                }
-
                 if (!component.observer) {
-                    var observer = new Observer.ObjectObserver(self.selectors[component.selector].controllerInstance);
-
-                    observer.open(function(added, removed, changed, getOldValueFn) {
-
+                    WatchJS.watch(self.selectors[component.selector].controllerInstance, function() {
                         for (var component in self.selectors) {
                             self.createComponent(self.selectors[component]);
                         }
-
                         self.render(self.selectors[self.rootComponent.selector]);
                     });
                     component.observer = true;
                 }
-
-                self.selectors[component.selector].render = renderAttributes.call(self, self.selectors[component.selector].render, self.selectors[component.selector].controllerInstance);
             }
-            console.log(dom2hscript.parseHTML(self.selectors[component.selector].render), self.selectors[component.selector].render)
+            else {
+                // create empty controller
+                self.selectors[component.selector].controllerInstance = {};
+            }
+
+            // parse template
+            renderComponent = self.selectors[component.selector].render = renderAttributes.call(self, self.selectors[component.selector].template(), self.selectors[component.selector].controllerInstance);
+
+            //register helper
+            Handlebars.registerHelper(component.selector, function() {
+                console.log(this)
+                var args = arguments;
+                var options = args[args.length - 1];
+                var data = options.data.root;
+                var controller = self.selectors[options.name].controllerInstance;
+                if (options.fn) {
+                    controller.child = options.fn(this);
+                }
+                for (var attr in options.hash) {
+                    controller[attr] = options.hash[attr];
+                }
+                console.log(controller);
+
+                renderComponent = self.selectors[component.selector].render = renderAttributes.call(self, self.selectors[component.selector].template(), self.selectors[component.selector].controllerInstance);
+                return new Handlebars.SafeString(renderComponent);
+            });
+
+            //create virtual dom
             self.selectors[component.selector].tree = eval(dom2hscript.parseHTML(self.selectors[component.selector].render));
             return self.selectors[component.selector];
         },
@@ -15423,24 +14072,10 @@ var PhonePack = (function() {
 
 })();
 
-var Wellcome = PhonePack.createComponent({
-    selector: 'wellcome',
-    template: function() {
-        return '<div> <button></button></div>'
-    },
-    controller: function() {
-        var self = this;
-    }
-})
-
 var TodoInput = PhonePack.createComponent({
-    inject: ['wellcome'],
     selector: 'TodoInput',
     template: function() {
-        return '<div><div><input value="{{ test }}" /> {{ test }}</div> <wellcome></wellcome> </div>';
-    },
-    controller: function() {
-        this.test = 'input test';
+        return '<div><input value="{{people}}" /> {{people}} </div>';
     }
 })
 
@@ -15448,19 +14083,22 @@ var App = PhonePack.createComponent({
     inject: ['TodoInput'],
     selector: 'App',
     template: function() {
-        return '<div><div onclick="{{test}}"> Hello {{name}}</div> <TodoInput></TodoInput></div>';
+        return '<div><div> Hello {{name}}</div> {{#each peoples}} {{TodoInput people=this}} {{/each}} </div>';
     },
     controller: function() {
         var self = this;
-        self.nome = 'Wagss';
+        self.peoples = ['wagner', 'tiago'];
+        self.name = 'wagner ';
 
-        self.test = function() {
-            console.log(self);
-        }
+        setInterval(function() {
+            console.log(self.peoples);
+            self.peoples.push('mayara');
+        }, 2000);
+
     }
 });
 
 
 
 PhonePack.render(App, document.body);
-},{"clone":11,"dom2hscript":12,"handlebars":45,"observe-js":49,"virtual-dom/create-element":61,"virtual-dom/diff":62,"virtual-dom/h":63,"virtual-dom/patch":64,"zepto-browserify":88}]},{},[89]);
+},{"clone":11,"dom2hscript":12,"handlebars":45,"virtual-dom/create-element":60,"virtual-dom/diff":61,"virtual-dom/h":62,"virtual-dom/patch":63,"watchjs":86,"zepto-browserify":88}]},{},[89]);

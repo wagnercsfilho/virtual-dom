@@ -5,8 +5,8 @@ var createElement = require('virtual-dom/create-element');
 var dom2hscript = require("dom2hscript");
 var Handlebars = require('handlebars');
 var $ = require('zepto-browserify').$;
-var Observer = require("observe-js");
 var clone = require('clone');
+var WatchJS = require("watchjs");
 
 // 1: Create a function that declares what the DOM should look like
 /*function render(count) {
@@ -55,10 +55,9 @@ var PhonePack = (function() {
 
             self.selectors[component.selector] = component;
             self.selectors[component.selector].template = component.template;
-            self.selectors[component.selector].render = component.template();
 
             // render inner components
-            if (component.inject) {
+            /*if (component.inject) {
                 component.inject.forEach(function(selector) {
 
                     var pattern = new RegExp('<' + selector + '>(.*?)<\/' + selector + '>', 'g');
@@ -69,39 +68,51 @@ var PhonePack = (function() {
                     }
                 });
             }
-            if (renderComponent) self.selectors[component.selector].render = renderComponent;
+            if (renderComponent) self.selectors[component.selector].render = renderComponent;*/
 
             //init component controller
             if (component.controller) {
                 if (!self.selectors[component.selector].controllerInstance)
                     self.selectors[component.selector].controllerInstance = new component.controller();
 
-                for (var attr in self.selectors[component.selector].controllerInstance) {
-                    if (typeof self.selectors[component.selector].controllerInstance[attr] === 'function') {
-                        Handlebars.registerHelper(attr, function(person) {
-                            return new Handlebars.SafeString("(" +
-                                self.selectors[component.selector].controllerInstance[attr].toString().replace(/\"/g, "'") + ")()");
-                        });
-                    }
-                }
-
                 if (!component.observer) {
-                    var observer = new Observer.ObjectObserver(self.selectors[component.selector].controllerInstance);
-
-                    observer.open(function(added, removed, changed, getOldValueFn) {
-
+                    WatchJS.watch(self.selectors[component.selector].controllerInstance, function() {
                         for (var component in self.selectors) {
                             self.createComponent(self.selectors[component]);
                         }
-
                         self.render(self.selectors[self.rootComponent.selector]);
                     });
                     component.observer = true;
                 }
-
-                self.selectors[component.selector].render = renderAttributes.call(self, self.selectors[component.selector].render, self.selectors[component.selector].controllerInstance);
             }
-            console.log(dom2hscript.parseHTML(self.selectors[component.selector].render), self.selectors[component.selector].render)
+            else {
+                // create empty controller
+                self.selectors[component.selector].controllerInstance = {};
+            }
+
+            // parse template
+            renderComponent = self.selectors[component.selector].render = renderAttributes.call(self, self.selectors[component.selector].template(), self.selectors[component.selector].controllerInstance);
+
+            //register helper
+            Handlebars.registerHelper(component.selector, function() {
+                console.log(this)
+                var args = arguments;
+                var options = args[args.length - 1];
+                var data = options.data.root;
+                var controller = self.selectors[options.name].controllerInstance;
+                if (options.fn) {
+                    controller.child = options.fn(this);
+                }
+                for (var attr in options.hash) {
+                    controller[attr] = options.hash[attr];
+                }
+                console.log(controller);
+
+                renderComponent = self.selectors[component.selector].render = renderAttributes.call(self, self.selectors[component.selector].template(), self.selectors[component.selector].controllerInstance);
+                return new Handlebars.SafeString(renderComponent);
+            });
+
+            //create virtual dom
             self.selectors[component.selector].tree = eval(dom2hscript.parseHTML(self.selectors[component.selector].render));
             return self.selectors[component.selector];
         },
@@ -144,24 +155,10 @@ var PhonePack = (function() {
 
 })();
 
-var Wellcome = PhonePack.createComponent({
-    selector: 'wellcome',
-    template: function() {
-        return '<div> <button></button></div>'
-    },
-    controller: function() {
-        var self = this;
-    }
-})
-
 var TodoInput = PhonePack.createComponent({
-    inject: ['wellcome'],
     selector: 'TodoInput',
     template: function() {
-        return '<div><div><input value="{{ test }}" /> {{ test }}</div> <wellcome></wellcome> </div>';
-    },
-    controller: function() {
-        this.test = 'input test';
+        return '<div><input value="{{people}}" /> {{people}} </div>';
     }
 })
 
@@ -169,15 +166,18 @@ var App = PhonePack.createComponent({
     inject: ['TodoInput'],
     selector: 'App',
     template: function() {
-        return '<div><div onclick="{{test}}"> Hello {{name}}</div> <TodoInput></TodoInput></div>';
+        return '<div><div> Hello {{name}}</div> {{#each peoples}} {{TodoInput people=this}} {{/each}} </div>';
     },
     controller: function() {
         var self = this;
-        self.nome = 'Wagss';
+        self.peoples = ['wagner', 'tiago'];
+        self.name = 'wagner ';
 
-        self.test = function() {
-            console.log(self);
-        }
+        setInterval(function() {
+            console.log(self.peoples);
+            self.peoples.push('mayara');
+        }, 2000);
+
     }
 });
 
