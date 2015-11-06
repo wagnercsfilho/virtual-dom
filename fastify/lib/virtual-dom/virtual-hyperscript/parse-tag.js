@@ -45,9 +45,12 @@ function parseTag(tag, props) {
     if (classes) {
         if (props.className) {
             classes.push(props.className);
-        }
+        }   
 
-        props.className = classes.join(' ');
+        //[FASTIFY]
+        //change classname for class
+        //props.className = classes.join(' ');
+        props.class = classes.join(' ');
     }
 
     return props.namespace ? tagName : tagName.toUpperCase();

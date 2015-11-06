@@ -14,10 +14,6 @@
   "dependencies": {
     "clone": "^1.0.2",
     "handlebars": "^4.0.4",
-    "jquery-browserify": "^1.8.1",
-    "shortid": "^2.2.4",
-    "uuid": "^2.0.1",
-    "watchjs": "0.0.0",
     "zepto-browserify": "^1.1.6-1"
   }
 }

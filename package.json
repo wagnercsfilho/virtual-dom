@@ -11,7 +11,9 @@
     "observe-js": "^0.4.2",
     "watchjs": "0.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babelify": "^7.2.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
