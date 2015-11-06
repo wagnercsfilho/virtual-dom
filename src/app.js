@@ -1,18 +1,29 @@
 var fastify = require("../fastify");
 
+fastify.createHelper('status', function(done){
+    if (done){
+        return 'Done!'
+    } else {
+        return 'Not';
+    }
+});
+
 fastify.createComponent({
     selector: 'TodoInput',
     template: function() {
-        return '<input type="text" {{ model todo=props.todo }} /><a {{ click props.addTodo }} > Add Todo</a>';
+        return `
+            <input type="text" value="{{ props.todo }}" {{ onchange changeTodo=props.changeTodo }} /> 
+            <button {{ onclick addTodo=props.addTodo }}>Add Todo</button>
+            `;
     }
 });
 
 fastify.createComponent({
     selector: 'TodoItem', 
     template: function(){
-        return '<li>{{ props.todo }}</li>'
+        return '<li>{{ props.todo.name }} - {{ status props.todo.done }} <button {{ onclick doneTodo=props.doneTodo index=props.index }}>Done</button></li>'
     }
-})
+});
 
 fastify.createComponent({
     selector: 'App',
@@ -20,10 +31,10 @@ fastify.createComponent({
         return (
             `<div> 
                 <h2> Wellcome {{ user.name }} </h2>
-                {{ TodoInput parent=this addTodo=addTodo todo=todo }}
+                {{ TodoInput changeTodo=changeTodo addTodo=addTodo todo=todo }}
                 <ul>
                     {{#each todos }} 
-                        {{ TodoItem todo=this }} 
+                        {{ TodoItem todo=this doneTodo=../doneTodo index=@index }} 
                     {{/each}}
                 </ul>
             </div>`
@@ -31,22 +42,32 @@ fastify.createComponent({
     },
     controller: function() {
         var self = this;
-        self.todo = 'New Todo';
+        self.todo = '';
         self.todos = [
-            'Clean the Car', 
-            'Learn English', 
-            'Pay the bills'
+            {name: 'Clean the Car', done: false}, 
+            {name: 'Learn English', done: false},
+            {name: 'Pay the bills', done: false}
         ];
         self.user = {
             id: 1,
             name: 'Wagner CS Filho '
         };
         
+        self.changeTodo = function (e) {
+            self.todo = e.target.value;
+        }
+        
         self.addTodo = function(){
-            self.todos.push('Learn React');
+            self.todos.push({ name: self.todo, done: false });
+        }
+        
+        self.doneTodo = function (e, index) {
+            self.todos[3].done = true;
         }
         
     }
 });
 
-fastify.render('App', document.body);
+fastify.render('App', document.body, function(){
+    console.log('run')
+});

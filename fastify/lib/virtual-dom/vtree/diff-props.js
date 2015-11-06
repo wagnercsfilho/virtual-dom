@@ -14,13 +14,6 @@ function diffProps(a, b) {
         
         var aValue = a[aKey]
         var bValue = b[aKey]
-        
-        // [PHONEPACK] prevent reset input
-        if (aKey === 'value'){
-    		var value = document.getElementById(b.id).value;
-    		b[aKey].value = value;
-    		bValue = b[aKey];
-        }
 
         if (aValue === bValue) {
             continue
