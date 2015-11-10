@@ -19,7 +19,8 @@ var parseDOM = function(el){
     var attributes = {};
     for(var i = 0; i < el.attributes.length; i++){
       var attr = el.attributes[i];
-      if(attr.name && attr.value){
+      //if(attr.name && attr.value){
+      if(attr.name){
         if(attr.name == "style"){
           attributes.style = parseStyle(el);
         }
